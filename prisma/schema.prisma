@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Candidate {
+  id                 Int                @id @default(autoincrement()) @map("candidate_id")
+  name               String             @map("candidate_name")
+  email              String             @unique @map("candidate_email")
+  description        String?            @map("candidate_description")
+  availability       String?            @default("NOT_AVAILABLE") @map("candidate_availability")
+  imageUrl           String?            @map("candidate_image_url")
+  videoUrl           String?            @map("candidate_video_url")
+  resumeUrl          String?            @map("candidate_resume_url")
+  experience         Decimal            @default(0) @map("candidate_experience") @db.Decimal(10, 2)
+  rating             Int                @default(0) @map("candidate_rating")
+  longTermCommitment Boolean            @default(false) @map("long_term_commitment")
+  isPrivate          Boolean            @default(true) @map("candidate_is_private")
+  languages          String?            @map("candidate_languages")
+  location           String             @map("candidate_location")  
+  createdOn          DateTime           @default(now()) @map("candidate_created_on")
+  modifiedOn         DateTime?          @updatedAt @map("candidate_modified_on")
+  removedOn          DateTime?          @map("candidate_removed_on")
+  bookedCandidates   BookedCandidates[]
+  CandidateExpertise CandidateExpertise[]
+  CandidateTechnology CandidateTechnology[]
+
+  @@map("candidate")
+}
+
+model Expertise {
+  id             Int      @id @default(autoincrement())
+  expertise_name String    @map("expertise_name")
+  created_on     DateTime  @default(now()) @map("created_on")
+  deleted_on     DateTime? @map("deleted_on")
+  CandidateExpertise CandidateExpertise[]
+  @@map("expertise")
+}
+
+model CandidateExpertise {
+  candidate_id  Int       @map("candidate_id")
+  expertise_id  Int       @map("expertise_id")
+  created_on    DateTime  @default(now()) @map("created_on")
+  Candidate     Candidate @relation(fields: [candidate_id], references: [id])
+  Expertise     Expertise @relation(fields: [expertise_id], references: [id])
+  @@id([candidate_id, expertise_id])
+  @@map("candidate_expertise")
+}
+model Technology {
+  id                  Int       @id @default(autoincrement())
+  technology_name     String    @map("technology_name")
+  parent_technology_id Int?     @map("parent_technology_id")
+  created_on          DateTime  @default(now()) @map("created_on")
+  deleted_on          DateTime? @map("deleted_on")
+  CandidateTechnology CandidateTechnology[]
+  @@map("technology")
+}
+
+model CandidateTechnology {
+  candidate_id  Int       @map("candidate_id")  
+  technology_id Int       @map("technology_id")
+  created_on    DateTime  @default(now()) @map("created_on")
+  Candidate     Candidate @relation(fields: [candidate_id], references: [id])
+  Technology    Technology @relation(fields: [technology_id], references: [id])
+  @@id([candidate_id, technology_id])
+  @@map("candidate_technology")
+}
+//Create a new table with the name Expertise and that should contain id, expertise_name , created_on, deleted_on
+//Create a new table candidate_expertise and that should have candidate_id, expertise_id, created_on where expertise_id is the id from expertise table
+ //Create a new table with the name technology and that should have id, technology_name, parent_technology_id ,  created_on, deleted_on
+ //Create a new table with the name candidate_technology with the following columns candidate_id, technology_id, created_on
+//remove act
+
+
+
+model Customer {
+  id          Int       @id @default(autoincrement()) @map("customer_id")
+  name        String    @map("customer_name")
+  companyName String    @map("customer_company_name")
+  email       String    @map("customer_email")
+  phone       String?   @map("customer_phone")
+  password    String    @map("customer_password")
+  approvedOn  DateTime? @default(now()) @map("customer_approved_on")
+  bookings    Booking[]
+  createdOn   DateTime  @default(now()) @map("customer_created_on")
+  modifiedOn  DateTime? @updatedAt @map("customer_modified_on")
+  removedOn   DateTime? @map("customer_removed_on")
+
+  @@map("customer")
+}
+
+model Booking {
+  id               Int                @id @default(autoincrement()) @map("booking_id")
+  name             String             @map("booking_name")
+  email            String             @map("booking_email")
+  phone            String             @map("booking_phone")
+  message          String?            @map("booking_message")
+  fileAttachment   String?            @map("booking_file_attachment")
+  involvementId    Int                @map("booking_involvement_id")
+  involvement      Involvement        @relation(fields: [involvementId], references: [id])
+  customerId       Int                @map("booking_customer_id")
+  customer         Customer           @relation(fields: [customerId], references: [id])
+  createdOn        DateTime           @default(now()) @map("booking_created_on")
+  modifiedOn       DateTime?          @updatedAt @map("booking_modified_on")
+  removedOn        DateTime?          @map("booking_removed_on")
+  bookedCandidates BookedCandidates[]
+
+  @@map("booking")
+}
+
+model BookedCandidates {
+  id          Int       @map("booking_id")
+  candidateId Int       @map("candidate_id")
+  booking     Booking   @relation(fields: [id], references: [id])
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  @@id([id, candidateId])
+  @@map("booked_candidates")
+}
+
+model Involvement {
+  id                  Int       @id @default(autoincrement()) @map("involvement_id")
+  name                String    @map("involvement_name")
+  involvementType     String    @default("MEDIUM") @map("involvement_type")
+  createdOn           DateTime  @default(now()) @map("involvement_created_on")
+  modifiedOn          DateTime? @updatedAt @map("involvement_modified_on")
+  removedOn           DateTime? @map("involvement_removed_on")
+  bookingInvolvements Booking[]
+
+  @@map("involvement")
+}
+
+model Translation {
+  id         Int      @id @default(autoincrement()) @map("id")
+  original   String   @map("original")
+  targetLang String   @map("target_lang")
+  translated String   @map("translated")
+  createdOn  DateTime @default(now()) @map("created_on")
+
+  @@unique([original, targetLang])
+  @@index([original, targetLang])
+  @@map("translation")
+}
