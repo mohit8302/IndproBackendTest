@@ -28,18 +28,18 @@ model Candidate {
   bookedCandidates   BookedCandidates[]
   CandidateExpertise CandidateExpertise[]
   CandidateTechnology CandidateTechnology[]
-
   @@map("candidate")
 }
 
 model Expertise {
   id             Int      @id @default(autoincrement())
-  expertise_name String    @map("expertise_name")
-  created_on     DateTime  @default(now()) @map("created_on")
+  expertise_name String   @unique @map("expertise_name") // Make this field unique
+  created_on     DateTime @default(now()) @map("created_on")
   deleted_on     DateTime? @map("deleted_on")
   CandidateExpertise CandidateExpertise[]
   @@map("expertise")
 }
+
 
 model CandidateExpertise {
   candidate_id  Int       @map("candidate_id")
@@ -51,14 +51,16 @@ model CandidateExpertise {
   @@map("candidate_expertise")
 }
 model Technology {
-  id                  Int       @id @default(autoincrement())
-  technology_name     String    @map("technology_name")
-  parent_technology_id Int?     @map("parent_technology_id")
-  created_on          DateTime  @default(now()) @map("created_on")
-  deleted_on          DateTime? @map("deleted_on")
+  id                    Int       @id @default(autoincrement())
+  technology_name       String    @unique @map("technology_name") // Make this field unique
+  technology_experience Float     @map("technology_experience")
+  parent_technology_id  Int?      @map("parent_technology_id")
+  created_on            DateTime  @default(now()) @map("created_on")
+  deleted_on            DateTime? @map("deleted_on")
   CandidateTechnology CandidateTechnology[]
   @@map("technology")
 }
+
 
 model CandidateTechnology {
   candidate_id  Int       @map("candidate_id")  
